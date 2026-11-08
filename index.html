@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster — Modern Python To-Do Dashboard</title>
+    <meta name="description" content="A sleek, modern task manager built with Python, Flask, and vanilla web technologies.">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Top Navigation / Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-square-check"></i>
+                </div>
+                <div>
+                    <h1 class="brand-title">TaskMaster</h1>
+                    <p class="brand-subtitle">Python Full-Stack Task Manager</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div id="connectionStatus" class="status-badge" title="Backend connection status">
+                    <span class="status-dot"></span>
+                    <span id="connectionText">Checking backend...</span>
+                </div>
+
+                <button id="themeToggle" class="icon-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Container -->
+        <main class="dashboard-container">
+            <!-- Analytics / Stats Bar -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon total"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Tasks</span>
+                        <span class="stat-value" id="statTotal">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon pending"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Active Tasks</span>
+                        <span class="stat-value" id="statActive">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon completed"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value" id="statCompleted">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card progress-card">
+                    <div class="progress-header">
+                        <span class="stat-label">Progress</span>
+                        <span class="progress-percentage" id="progressPercentage">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Task Creation Form Card -->
+            <section class="card create-card">
+                <form id="taskForm" class="task-form">
+                    <div class="input-primary-group">
+                        <i class="fa-solid fa-plus-circle input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="taskInput" 
+                            placeholder="What do you need to accomplish today?" 
+                            autocomplete="off"
+                            required
+                        >
+                        <button type="submit" class="btn btn-primary" id="addTaskBtn">
+                            <span>Add Task</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="option-pill">
+                            <i class="fa-solid fa-flag"></i>
+                            <label for="prioritySelect">Priority:</label>
+                            <select id="prioritySelect">
+                                <option value="low">🟢 Low</option>
+                                <option value="medium" selected>🟡 Medium</option>
+                                <option value="high">🔴 High</option>
+                            </select>
+                        </div>
+
+                        <div class="option-pill">
+                            <i class="fa-solid fa-tags"></i>
+                            <label for="categorySelect">Category:</label>
+                            <select id="categorySelect">
+                                <option value="General" selected>General</option>
+                                <option value="Work">💼 Work</option>
+                                <option value="Personal">🏡 Personal</option>
+                                <option value="Study">📚 Study</option>
+                                <option value="Health">💪 Health</option>
+                            </select>
+                        </div>
+
+                        <div class="option-pill">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <label for="dueDateInput">Due:</label>
+                            <input type="date" id="dueDateInput">
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Task Controls (Search, Filters, Sort, Actions) -->
+            <section class="task-controls">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search tasks...">
+                    <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display: none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">All</button>
+                    <button class="filter-tab" data-filter="active">Active</button>
+                    <button class="filter-tab" data-filter="completed">Completed</button>
+                </div>
+
+                <div class="controls-actions">
+                    <div class="sort-selector">
+                        <i class="fa-solid fa-arrow-down-short-wide"></i>
+                        <select id="sortSelect">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="priority">By Priority</option>
+                            <option value="dueDate">By Due Date</option>
+                        </select>
+                    </div>
+
+                    <button id="clearCompletedBtn" class="btn btn-outline-danger" title="Remove all completed tasks">
+                        <i class="fa-regular fa-trash-can"></i>
+                        <span>Clear Completed</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Tasks List Container -->
+            <section class="tasks-section">
+                <ul id="taskList" class="task-list">
+                    <!-- Tasks will be dynamically injected here -->
+                </ul>
+
+                <!-- Empty State Message -->
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <h3 id="emptyTitle">No tasks found</h3>
+                    <p id="emptySubtitle">You're all caught up! Add a new task above to stay productive.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>Built with <i class="fa-solid fa-heart footer-heart"></i> using <strong>Python</strong> &amp; <strong>Vanilla Web</strong></p>
+                <div class="footer-links">
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="footer-link">
+                        <i class="fa-brands fa-github"></i> View on GitHub
+                    </a>
+                    <span class="separator">•</span>
+                    <button id="exportTasksBtn" class="link-btn">
+                        <i class="fa-solid fa-download"></i> Export JSON
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Floating Toast Notifications -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Main JavaScript Logic -->
+    <script src="static/js/app.js"></script>
+</body>
+</html>
+
